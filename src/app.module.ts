@@ -1,10 +1,21 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import { LoggingMiddleware } from './middleware/loggingMiddleware';
+import { RouteNotFoundMiddleware } from './middleware/routeNotFoundMiddleware';
 
 @Module({
   imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  // TODO: Posteriormente agregar aquí los servicios y controladores de la aplicación...
+  controllers: [],
+  providers: [],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggingMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+
+    consumer
+      .apply(RouteNotFoundMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}
