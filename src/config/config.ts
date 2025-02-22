@@ -21,5 +21,10 @@ export const SERVER = {
     EPASS: process.env.EPASS || '',
     EMAIL: process.env.EMAIL || '',
     EMAILW: process.env.EMAILW || '',
-    WEB: process.env.WEB || ''
+    WEB: process.env.WEB || '',
+    // Environment variables for WhatsApp service...
+    WS_SID: process.env.TWILIO_ACCOUNT_SID || '',
+    WS_TOKEN: process.env.TWILIO_AUTH_TOKEN || '',
+    TWS_NUMBER: process.env.TWILIO_WHATSAPP_NUMBER || '',
+    ADMIN_WHATSAPP_NUMBER: process.env.ADMIN_WHATSAPP_NUMBER || ''
 };

@@ -6,12 +6,13 @@
  * Author: Ricardo Medina
  * Date: 20 de febrero de 2025
  */
-import { EmailBaseMethods } from "../interfaces/IEmails";
 import logging from "../config/logging";
+import { EmailBaseMethods } from "../interfaces/IEmails";
 import { generateRandomNumber } from "../utils/randomenizer";
 import { determineTimeTimeOfDay } from "../utils/timeOfDay";
 import { sendEmail } from "../utils/emailSender";
 import { SentMessageInfo } from "nodemailer";
+import { generateHtmlTemplate } from "src/utils/emailTemplates";
 
 class GreetingEmail implements EmailBaseMethods {
     private name: string;
@@ -56,13 +57,15 @@ class GreetingEmail implements EmailBaseMethods {
 
         // randomly choose a message...
         const message = this.correctMessage();
+        const htmlTemplate: string = generateHtmlTemplate(message, 'Greetings from Ricardo Dev');
+
 
         // the subject of the email...
         const subject: string = `Grateful for your Message, ${this.name} let's explore more together!`;
 
         // send email message through sendEmail function...
         try {
-            const response: SentMessageInfo = await sendEmail(this.email, subject, message);
+            const response: SentMessageInfo = await sendEmail(this.email, subject, htmlTemplate);
             // Log revelant information about the sent email...
             this.logsInfo(response);
         } catch (error: any) {

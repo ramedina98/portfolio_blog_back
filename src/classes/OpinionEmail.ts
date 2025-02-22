@@ -2,17 +2,17 @@
  * @OpinionEmail
  * This class handles the opinions email type.
  * It sends an opinion email to the user and logs the process.
- * 
+ *
  * Author: Ricardo Medina
  * Date: 20 de febrero de 2025
  */
-
+import logging from "../config/logging";
 import { EmailBaseMethods } from "../interfaces/IEmails";
 import { generateRandomNumber } from "../utils/randomenizer";
 import { sendEmail } from "../utils/emailSender";
 import { SERVER } from "../config/config";
 import { SentMessageInfo } from "nodemailer";
-import logging from "../config/logging";
+import { generateHtmlTemplate } from "../utils/emailTemplates";
 
 class OpinionEmails implements EmailBaseMethods {
     private name: string;
@@ -50,16 +50,34 @@ class OpinionEmails implements EmailBaseMethods {
         return answers[option];
     }
 
+    // HTML email template for me...
     private messageForMe(): string {
         return `
-            <h2>El usuario ${this.name} ha dejado un comentario en tu sitio web.</h2>
-            <p>
-                Deberías hecharle un vistazo, y si gustas ponerte en contacto con él para
-                agradecerle personalmente su feedback.
-                <br>
-                Este es su correo: ${this.email}
-                Link al comentario: ${SERVER.WEB}/inbox/${this.id_email}
-            </p>
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Oferta Laboral</title>
+
+            </head>
+            <body style="font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0; background-color: #f4f4f4;">
+                <div class="container" style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #e1decf; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                    <div class="header" style="text-align: center; padding: 10px 0; background-color: #6a6b36; color: #e1decf; border-radius: 8px 8px 0 0;">
+                        <h2>Nuevo Comentario Recibido</h2>
+                    </div>
+                    <div class="content" style="padding: 20px;">
+                        <p>El usuario <strong>${this.name}</strong> ha dejado un comentario en tu sitio web.</p>
+                        <p>Deberías echarle un vistazo, y si gustas ponerte en contacto con él para agradecerle personalmente su feedback.</p>
+                        <p>Este es su correo: <a href="mailto:${this.email}" style="color: #52769a; text-decoration: none;">${this.email}</a></p>
+                        <p>Link al comentario: <a href="${SERVER.WEB}/inbox/${this.id_email}" style="color: #52769a; text-decoration: none;">Ver Comentario</a></p>
+                    </div>
+                    <div class="footer" style="text-align: center; padding: 10px 0; background-color: #6a6b36; color: #e1decf; border-radius: 0 0 8px 8px;">
+                        <p>&copy; ${new Date().getFullYear()} Tu Sitio Web</p>
+                    </div>
+                </div>
+            </body>
+            </html>
         `;
     }
 
@@ -68,6 +86,8 @@ class OpinionEmails implements EmailBaseMethods {
 
         // Randomly choose a message for the client...
         const message = this.correctMessage();
+        // Generate the HTML template for the email...
+        const htmlTemplate = generateHtmlTemplate(message, "Thnak you for your opinion");
         // Message for me...
         const messageForMe = this.messageForMe();
 
@@ -80,7 +100,7 @@ class OpinionEmails implements EmailBaseMethods {
         try {
             // Make a double call to the sendEmail function...
             const [response1, response2]: SentMessageInfo[] = await Promise.all([
-                sendEmail(this.email, subject, message),
+                sendEmail(this.email, subject, htmlTemplate),
                 sendEmail(SERVER.EMAIL, subjectForMe, messageForMe)
             ]);
 
