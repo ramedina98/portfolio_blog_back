@@ -8,6 +8,9 @@
  * - IEFactory: An interface representing the options required to create different types of emails.
  * - MailOptions: An interface representing the options for sending an email.
  * - INotificationTitle: An interface for typing the notificationTitle function.
+ *
+ * @update: Ricardo Medina
+ * Date: 23 de febrero de 2025
  */
 
 enum EmailType {
@@ -39,6 +42,9 @@ interface IEFactory{
     email: string;
     tz: string;
     message: string;
+    article_title?: string;
+    article_link?: string;
+    article_image?: string;
 }
 
 interface MailOptions {
