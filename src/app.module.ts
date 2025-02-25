@@ -4,7 +4,6 @@ import { RouteNotFoundMiddleware } from './middleware/routeNotFoundMiddleware';
 
 @Module({
   imports: [],
-  // TODO: Posteriormente agregar aquí los servicios y controladores de la aplicación...
   controllers: [],
   providers: [],
 })

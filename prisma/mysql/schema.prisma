@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/mysql"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/**
+ * Models of the MySQL database...
+ */
+
+model Users {
+  id_user       String   @id @default(uuid())
+  first_name    String   @db.VarChar(50)
+  second_name   String   @db.VarChar(50)
+  first_surname String   @db.VarChar(50)
+  second_surname String  @db.VarChar(50)
+  email         String   @db.VarChar(50)
+  phone         String   @db.VarChar(12)
+  password      String   @db.VarChar(255)
+  photo         String   @db.VarChar(255)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  resumes       Resume[] // Relación uno a muchos con Resume
+}
+
+model Resume {
+  id_resume     String   @id @default(uuid())
+  id_user       String
+  pdf_resume    String   @db.VarChar(255)
+  summary       String   @db.Text
+  logo          String   @db.VarChar(255)
+  email         String   @db.VarChar(50)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  user          Users    @relation(fields: [id_user], references: [id_user])
+  experiences   Experience[]
+  educations    Education[]
+  courses       Courses[]
+  technologies  Technologies[]
+}
+
+model Experience {
+  id_experience String   @id @default(uuid())
+  title_experience String @db.VarChar(50)
+  description   String   @db.Text
+  position      String   @db.VarChar(50)
+  type_experience String  @db.VarChar(50)
+  start_date    DateTime
+  end_date      DateTime
+  id_resume     String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  resume        Resume   @relation(fields: [id_resume], references: [id_resume])
+  technologies  Technologies[]
+}
+
+model Education {
+  id_education  String   @id @default(uuid())
+  title_education String @db.VarChar(50)
+  description   String   @db.Text
+  institution   String   @db.VarChar(50)
+  start_date    DateTime
+  end_date      DateTime
+  id_resume     String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  resume        Resume   @relation(fields: [id_resume], references: [id_resume])
+}
+
+model Courses {
+  id_course     String   @id @default(uuid())
+  title_course  String   @db.VarChar(50)
+  description   String   @db.Text
+  institution   String   @db.VarChar(50)
+  start_date    DateTime
+  end_date      DateTime
+  id_resume     String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  resume        Resume   @relation(fields: [id_resume], references: [id_resume])
+}
+
+model Technologies {
+  id_technology    Int       @id @default(autoincrement())
+  name_technology  String    @db.VarChar(50)
+  icon_technology  String    @db.VarChar(50)
+  id_experience    String
+  id_resume        String
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  experience       Experience @relation(fields: [id_experience], references: [id_experience])
+  resume           Resume    @relation(fields: [id_resume], references: [id_resume])
+}
+
+model Testimonials {
+  id_testimonial String @id @default(uuid())
+  name_testimonial String @db.VarChar(50)
+  position_testimonial String @db.VarChar(50)
+  company_testimonial String @db.VarChar(50)
+  description_testimonial String @db.Text
+  photo_testimonial String @db.VarChar(255)
+  audio_testimonial String @db.VarChar(255)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+}
+
+model Newsletter {
+  id_newsletter String @id @default(uuid())
+  email         String @db.VarChar(50)
+  user_name     String @db.VarChar(50)
+  suscribe      Boolean @default(true)
+  consent       Boolean @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+}
+
+model Emails {
+  id_email      String @id @default(uuid())
+  email_sender  String @db.VarChar(50)
+  name_sender   String @db.VarChar(50)
+  email_receiver String @db.VarChar(50)
+  subject       String @db.VarChar(50)
+  message       String @db.Text
+  email_type    String @db.VarChar(50)
+  is_read       Boolean @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+}
+
+model GeoTracking {
+  id_geo_tracking String   @id @default(uuid())
+  ip_address      String   @db.VarChar(45)
+  country         String   @db.VarChar(50)
+  region          String   @db.VarChar(50)
+  city            String   @db.VarChar(50)
+  latitude        Float
+  longitude       Float
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+}
+
+model Logs {
+  id_log     String   @id @default(uuid())
+  title_log  String   @db.VarChar(50)
+  summary    String   @db.Text
+  source     String   @db.VarChar(10) // Field to identify the source of the error (back or front)
+  date       DateTime @default(now())
+  active     Boolean  @default(true)
+}

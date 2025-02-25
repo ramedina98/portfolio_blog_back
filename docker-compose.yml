@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  mongodb:
+    image: mongo:4.4
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  app:
+    build: .
+    container_name: app
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      MONGODB_URL: ${MONGODB_URL}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+      - mongodb
+    volumes:
+      - .:/usr/src/app
+    command: sh -c "npm install && npx prisma migrate deploy --schema=./prisma/mysql/schema.prisma && nodemon --watch src --exec npm start"
+
+volumes:
+  mysql-data:
+  mongo-data:

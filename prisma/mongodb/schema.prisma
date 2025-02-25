@@ -1,0 +1,63 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../generated/mongodb"
+}
+
+datasource db {
+    provider = "mongodb"
+    url      = env("MONGODB_URL")
+}
+
+/**
+* Models of the MongoDB database...
+*/
+
+// Modelo para proyectos freelance
+model FreelanceProject {
+    id            String   @id @default(auto()) @map("_id") @db.ObjectId
+    title         String
+    brieft        String
+    author        String
+    portada       String
+    imgs          String[]
+    subtitles     String[]
+    content       String
+    date          DateTime
+    date_project  String
+    web           String
+    repo_github   String
+}
+
+// Modelo para proyectos de trabajo
+model WorkProject {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    company   String
+    position  String
+    brief     String
+    portada   String
+    imgs      String[]
+    content   String
+    web       String
+}
+
+// Modelo para publicaciones del blog
+model BlogPost {
+    id         String   @id @default(auto()) @map("_id") @db.ObjectId
+    title      String
+    brieft     String
+    author     String
+    portada    String
+    content    String
+    date       DateTime
+    subtitles  String[]
+    likes      Int      @default(0)
+}
+
+// Modelo para bitácora de actividades
+model ActivityLog {
+    id          String   @id @default(auto()) @map("_id") @db.ObjectId
+    activity    String
+    user        String
+    summary     String
+    timestamp   DateTime @default(now())
+}
