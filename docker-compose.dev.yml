@@ -32,23 +32,6 @@ services:
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
       - ./mongod.conf:/etc/mongod.conf:ro  # Montar el archivo de configuración
 
-  app:
-    build: .
-    container_name: app
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-      MONGODB_URL: ${MONGODB_URL}
-    ports:
-      - "3000:3000"
-    depends_on:
-      - mysql
-      - mongodb
-    volumes:
-      - .:/app
-    command: sh -c "npm install && npm run prisma:migrate:mysql && npm run prisma:migrate:mongodb && nodemon --watch src --exec npm start"
-
 volumes:
   mysql-data:
   mongo-data:

@@ -17,7 +17,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "prisma:migrate:mysql": "npx prisma migrate deploy --schema=./prisma/mysql/schema.prisma",
+    "prisma:migrate:mongodb": "npx prisma db push --schema=./prisma/mongodb/schema.prisma",
+    "prisma:generate": "npx prisma generate --schema=./prisma/mysql/schema.prisma && npx prisma generate --schema=./prisma/mongodb/schema.prisma"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -43,7 +46,6 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/moment-timezone": "^0.5.13",
-    "@types/node": "^22.10.7",
     "@types/nodemailer": "^6.4.17",
     "@types/supertest": "^6.0.2",
     "@types/twilio": "^3.19.2",

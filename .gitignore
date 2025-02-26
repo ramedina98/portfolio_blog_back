@@ -56,3 +56,7 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 *.txt
+/prisma/generated
+*.conf
+/prisma/mysql/migrations
+/init-mongo.js
