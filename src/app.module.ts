@@ -1,11 +1,9 @@
 import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { LoggingMiddleware } from './middleware/loggingMiddleware';
-import { AuthController } from './modules/auth/auth.controller';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
-  imports: [],
-  controllers: [AuthController],
-  providers: [],
+  imports: [AuthModule],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

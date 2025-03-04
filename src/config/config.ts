@@ -6,7 +6,7 @@
  * Author: Ricardo Medina
  * Date: 20 de febrero de 2025
  */
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 

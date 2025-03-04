@@ -15,7 +15,7 @@
  * @date 28/02/2025
  */
 import { Injectable, BadRequestException } from "@nestjs/common"
-import { mysqlPrisma } from "src/database/PrismaClient";
+import { PrismaService } from "src/database/service/prisma.service";
 import { JwtService } from "@nestjs/jwt";
 import { CreateUserDto } from "../dto/auth.dto";
 import { IUser, ResponseUser } from "src/interfaces/IAuth";
@@ -26,11 +26,16 @@ import logging from "src/config/logging";
 
 @Injectable()
 export class AuthService {
+    private mysql: any;
+    private logs: any;
+
     constructor(
-        private readonly prisma: typeof mysqlPrisma,
-        private readonly jwtService: JwtService,
+        private readonly PrismaService:  PrismaService,
         private readonly logsService: ErrorLoggerService
-    ) {}
+    ) {
+        this.mysql = PrismaService.getMySQL();
+        this.logs = logsService;
+    }
 
     // General log handling
     private MessageHandling(message: string, loggingType: keyof typeof logging): void {
@@ -45,7 +50,7 @@ export class AuthService {
      */
     async registerUser(dto: CreateUserDto): Promise<ResponseUser>{
         // First, check if the user already exits...
-        const existingUser: IUser | null = await this.prisma.users.findFirst({
+        const existingUser: IUser | null = await this.mysql.users.findFirst({
             where: {
                 first_name: dto.first_name,
                 first_surname: dto.first_surname,
@@ -66,7 +71,7 @@ export class AuthService {
         const hashedPassword: string = await bcrypt.hash(dto.password, 10);
 
         try {
-            const user: IUser = await this.prisma.users.create({
+            const user: IUser = await this.mysql.users.create({
                 data: {
                     ...dto,
                     password: hashedPassword,
@@ -81,7 +86,7 @@ export class AuthService {
         } catch (error: any) {
             this.MessageHandling(`Error: ${error.message}`, "error");
             // Error handling service, logs it to the database and notifies me via WhatsApp for quick action
-            await this.logsService.logError(
+            await this.logs.logError(
                 "Error in the registration service",
                 error.message,
                 "back"

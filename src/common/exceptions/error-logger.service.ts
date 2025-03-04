@@ -1,16 +1,19 @@
 import { Injectable } from "@nestjs/common";
-import { mysqlPrisma } from "src/database/PrismaClient";
+import { PrismaService } from "src/database/service/prisma.service";
 import { sendWhatsAppMessage } from "../../utils/whatsappSender"
 import { SERVER } from "src/config/config";
 
 @Injectable()
 export class ErrorLoggerService {
-    constructor(private readonly prisma: typeof mysqlPrisma) {};
+    private mysql: any;
+    constructor(private readonly prisma: PrismaService) {
+        this.mysql = prisma.getMySQL();
+    };
 
     async logError(title: string, summary: string, source: 'back' | 'front') {
         try {
             // create a record of the error in the database...
-            await this.prisma.logs.create({
+            await this.mysql.logs.create({
                 data: {
                     title_log: title,
                     summary,
