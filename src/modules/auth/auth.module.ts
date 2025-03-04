@@ -6,9 +6,11 @@ import { LoggerModule } from "src/common/exceptions/logger.module";
 import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
 import { SERVER } from "src/config/config";
+import { SecurityModule } from "src/security/security.module";
 
 @Module({
     imports: [
+        SecurityModule,
         PrismaModule,
         LoggerModule,
         PassportModule,
@@ -18,7 +20,7 @@ import { SERVER } from "src/config/config";
         })
     ],
     controllers: [AuthController],
-    providers: [AuthService], // TODO: agregar jwStragery...
+    providers: [AuthService],
     exports: [AuthService]
 })
 export class AuthModule {};
