@@ -31,7 +31,8 @@ export class AuthService {
 
     constructor(
         private readonly PrismaService:  PrismaService,
-        private readonly logsService: ErrorLoggerService
+        private readonly logsService: ErrorLoggerService,
+        private readonly JwtService: JwtService
     ) {
         this.mysql = PrismaService.getMySQL();
         this.logs = logsService;
@@ -125,12 +126,21 @@ export class AuthService {
                 }
             }
 
-            // TODO: falta crear los tokens...
+            const token: string = this.JwtService.sign({
+                payload: {
+                    id: existingUser.id_user,
+                    email: existingUser.email,
+                    phone: existingUser.phone,
+                    create: existingUser.created_at,
+                    updated: existingUser.updated_at
+                }
+            });
+
             logging.info("Login successfully");
             return {
                 status: 200,
                 message: `Welcome back ${existingUser.first_name} ${existingUser.first_surname}`,
-                token: "",
+                token: token,
                 refreshToken: "",
                 user: {
                     name: existingUser.first_name,
