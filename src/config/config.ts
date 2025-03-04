@@ -26,5 +26,8 @@ export const SERVER = {
     WS_SID: process.env.TWILIO_ACCOUNT_SID || '',
     WS_TOKEN: process.env.TWILIO_AUTH_TOKEN || '',
     TWS_NUMBER: process.env.TWILIO_WHATSAPP_NUMBER || '',
-    ADMIN_WHATSAPP_NUMBER: process.env.ADMIN_WHATSAPP_NUMBER || ''
+    ADMIN_WHATSAPP_NUMBER: process.env.ADMIN_WHATSAPP_NUMBER || '',
+    // Enviroment variables for JwTokens...
+    JWTKEY: process.env.JWT_SECRET || '',
+    JTIME: process.env.JWT_LIFE_TIME || ''
 };
