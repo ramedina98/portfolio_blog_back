@@ -27,10 +27,21 @@ export class CreateUserDto {
 
     @IsNotEmpty()
     @IsString()
-    @MinLength(6)
+    @MinLength(8)
     password: string;
 
     @IsNotEmpty()
     @IsString()
     photo: string;
+}
+
+export class LoginUserDto {
+    @IsNotEmpty()
+    @IsEmail()
+    email: string;
+
+    @IsNotEmpty()
+    @IsString()
+    @MinLength(8)
+    password: string;
 }

@@ -17,7 +17,7 @@
 import { Injectable, BadRequestException } from "@nestjs/common"
 import { PrismaService } from "src/database/service/prisma.service";
 import { JwtService } from "@nestjs/jwt";
-import { CreateUserDto } from "../dto/auth.dto";
+import { CreateUserDto, LoginUserDto} from "../dto/auth.dto";
 import { IUser, ResponseUser } from "src/interfaces/IAuth";
 import { ErrorLoggerService } from "../../../common/exceptions/error-logger.service";
 import { SERVER } from "src/config/config";
@@ -89,6 +89,64 @@ export class AuthService {
                 "back"
             );
             throw new BadRequestException('Failed to create user account');
+        }
+    }
+
+    /**
+     * @method POST
+     * Service to login...
+     */
+    async loginUser(dto: LoginUserDto): Promise<ResponseUser>{
+        try {
+            // first check if the user already exists...
+            const existingUser: IUser | null = await this.mysql.users.findFirst({
+                where: {
+                    email: dto.email
+                }
+            });
+
+            if(!existingUser){
+                logging.warning(`The user ${dto.email} does not exists.`)
+                return {
+                    status: 404,
+                    message: "User does not exist!",
+                    user: {}
+                }
+            }
+
+            // then compare the password provided and the password in the database...
+            const isPasswordValid = await bcrypt.compare(dto.password, existingUser.password);
+            if(!isPasswordValid){
+                logging.warning("Password does not exists.");
+                return {
+                    status: 400,
+                    message: "Password does not exists.",
+                    user: {}
+                }
+            }
+
+            // TODO: falta crear los tokens...
+            logging.info("Login successfully");
+            return {
+                status: 200,
+                message: `Welcome back ${existingUser.first_name} ${existingUser.first_surname}`,
+                token: "",
+                refreshToken: "",
+                user: {
+                    name: existingUser.first_name,
+                    last_name: existingUser.first_surname,
+                    photo: existingUser.photo
+                }
+            }
+        } catch (error: any) {
+            logging.error(`Error: ${error.message}`);
+            // Error handling service, logs it to the database and notifies me via WhatsApp for quick action
+            await this.logs.logError(
+                "Error in the login service",
+                error.message,
+                "back"
+            );
+            throw new BadRequestException('Failed to login');
         }
     }
 }
