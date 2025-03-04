@@ -37,13 +37,6 @@ export class AuthService {
         this.logs = logsService;
     }
 
-    // General log handling
-    private MessageHandling(message: string, loggingType: keyof typeof logging): void {
-        console.log("::::::::::::::::::::::::::::::::::::::::::::::::::");
-        logging[loggingType](new Error(message));
-        console.log("::::::::::::::::::::::::::::::::::::::::::::::::::");
-    }
-
     /**
      * @method POST
      * Service to create new user...
@@ -60,7 +53,7 @@ export class AuthService {
 
         if(existingUser)    {
             // If the user already exists, throw an exception with a detailed message
-            this.MessageHandling("Existing account", "warning");
+            logging.warning("Existing account");
             return {
                 status: 400,
                 message: `The entered email (${dto.email}) already has an associated account with the name ${existingUser.first_name} ${existingUser.first_surname}`,
@@ -88,7 +81,7 @@ export class AuthService {
                 }
             };
         } catch (error: any) {
-            this.MessageHandling(`Error: ${error.message}`, "error");
+            logging.error(`Error: ${error.message}`);
             // Error handling service, logs it to the database and notifies me via WhatsApp for quick action
             await this.logs.logError(
                 "Error in the registration service",
