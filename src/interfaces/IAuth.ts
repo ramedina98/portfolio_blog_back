@@ -15,5 +15,15 @@ export interface IUser {
 export interface ResponseUser {
     status: number,
     message: string;
-    user: IUser | {};
+    /**
+     * Represents an interface element that may contain basic user information
+     * such as name, surname, and photo, or it may be empty.
+     *
+     * @update by Ricardo Medina on 03/03/2025
+     * */
+    user: {
+        name: string;
+        last_name: string;
+        photo: string;
+    } | {};
 }

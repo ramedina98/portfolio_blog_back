@@ -81,7 +81,11 @@ export class AuthService {
             return {
                 status: 201,
                 message: `Account successfully created for ${user.first_name} ${user.first_surname}`,
-                user: user
+                user: {
+                    name: user.first_name,
+                    last_name: user.first_surname,
+                    photo: user.photo
+                }
             };
         } catch (error: any) {
             this.MessageHandling(`Error: ${error.message}`, "error");
