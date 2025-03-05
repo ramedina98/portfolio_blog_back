@@ -21,9 +21,10 @@ model Users {
   email         String   @db.VarChar(50)
   phone         String   @db.VarChar(12)
   password      String   @db.VarChar(255)
-  photo         String   @db.VarChar(255)
+  photo         String   @db.VarChar(2048)
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
+  is_verified   Boolean  @default(false)
   resumes       Resume[] // Relación uno a muchos con Resume
 }
 
@@ -150,4 +151,17 @@ model Logs {
   source     String   @db.VarChar(10) // Field to identify the source of the error (back or front)
   date       DateTime @default(now())
   active     Boolean  @default(true)
+}
+
+model revokeToken {
+  id_revoke_token Int    @id @default(autoincrement())
+  token           String @db.VarChar(255)
+  id_user         String
+  reveoked_at     DateTime @default(now())
+}
+
+model refreshToken {
+  id_refresh_token Int    @id @default(autoincrement())
+  token            String @db.VarChar(255)
+  id_user          String
 }

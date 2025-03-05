@@ -15,13 +15,13 @@ export const TEST = process.env.NODE_ENV === 'test';
 export const PRODUCTION = process.env.NODE_ENV === 'production';
 
 export const SERVER = {
-    EHOST: process.env.EHOST || '',
-    EPORT: parseInt(process.env.EPORT as string) || 0,
-    EUSER: process.env.EUSER || '',
-    EPASS: process.env.EPASS || '',
-    EMAIL: process.env.EMAIL || '',
-    EMAILW: process.env.EMAILW || '',
+    EHOST: process.env.EHOST!,
+    EUSER: process.env.EUSER!,
+    EPASS: process.env.EPASS!,
+    EMAIL: process.env.EMAIL!,
+    EMAILW: process.env.EMAILW!,
     WEB: process.env.WEB || '',
+    URL: process.env.WEB_URL || '',
     // Environment variables for WhatsApp service...
     WS_SID: process.env.TWILIO_ACCOUNT_SID || '',
     WS_TOKEN: process.env.TWILIO_AUTH_TOKEN || '',
@@ -29,5 +29,6 @@ export const SERVER = {
     ADMIN_WHATSAPP_NUMBER: process.env.ADMIN_WHATSAPP_NUMBER || '',
     // Enviroment variables for JwTokens...
     JWTKEY: process.env.JWT_SECRET || '',
-    JTIME: process.env.JWT_LIFE_TIME || ''
+    JTIME: process.env.JWT_LIFE_TIME || '',
+    JRTIME: process.env.JWT_LIFE_TIME_REFRESH || '',
 };

@@ -22,7 +22,7 @@ export class ErrorLoggerService {
             });
             // then send a error message (whats app)...
             const message: string = `Ha ocurrido un error en la aplicación, dicho error es: ${summary}. Y se detecto en: ${source}`;
-            sendWhatsAppMessage(SERVER.ADMIN_WHATSAPP_NUMBER, message);
+            await sendWhatsAppMessage(SERVER.ADMIN_WHATSAPP_NUMBER, message);
         } catch (error: any) {
             console.log(`Failed to save log: `, error);
         }

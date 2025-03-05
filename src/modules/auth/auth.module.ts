@@ -7,6 +7,7 @@ import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
 import { SERVER } from "src/config/config";
 import { SecurityModule } from "src/security/security.module";
+import { EmailModule } from "src/utils/email/email.module";
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { SecurityModule } from "src/security/security.module";
         PrismaModule,
         LoggerModule,
         PassportModule,
+        EmailModule,
         JwtModule.register({
             secret: SERVER.JWTKEY,
             signOptions: { expiresIn: SERVER.JTIME }

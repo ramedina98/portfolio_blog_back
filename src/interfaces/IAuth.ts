@@ -10,6 +10,7 @@ export interface IUser {
     photo: string;
     created_at: Date;
     updated_at: Date;
+    is_verified: boolean;
 }
 
 export interface ResponseUser {
