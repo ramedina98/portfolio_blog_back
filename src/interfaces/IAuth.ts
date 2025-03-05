@@ -23,3 +23,11 @@ export interface ResponseUser {
         photo: string;
     } | {};
 }
+
+export interface IJwtPlayLoad {
+    id: string;
+    email: string;
+    phone: string;
+    create: Date;
+    updated: Date;
+}
