@@ -22,7 +22,7 @@ import { IUser, ResponseUser } from "src/interfaces/IAuth";
 import { ErrorLoggerService } from "../../../common/exceptions/error-logger.service";
 import { SERVER } from "src/config/config";
 import { EmailService } from "src/utils/email/email.service";
-import { Request } from "express";
+import { Request, Response } from "express";
 import * as bcrypt from 'bcrypt'
 import logging from "src/config/logging";
 
@@ -200,6 +200,66 @@ export class AuthService {
                 "back"
             );
             throw new BadRequestException('Failed to create user account');
+        }
+    }
+
+    /**
+     * @method POST
+     *
+     * Service to verify the email address...
+     */
+    async verifyEmail(email: string, token: string, res: Response): Promise<any>{
+        try {
+            const payload: any = this.JwtService.verify(token);
+
+            if(payload.payload.email !== email){
+                logging.warning("Email does not match");
+                res.redirect(`${SERVER.URL}/notification?message=Email does not match`);
+                return;
+            }
+
+            const user: IUser | null = await this.mysql.users.findFirst({
+                where: {
+                    email: email
+                }
+            });
+
+            if(!user){
+                logging.warning("User does not exists");
+                res.redirect(`${SERVER.URL}/notification?message=User does not exists`);
+                return;
+            }
+
+            if(user.is_verified){
+                logging.warning("User is already verified");
+                res.redirect(`${SERVER.URL}/notification?message=User is already verified`);
+                return;
+            }
+
+            // Update the user to verify the email...
+            await this.mysql.users.update({
+                where: {
+                    id_user: user.id_user
+                },
+                data: {
+                    is_verified: true
+                }
+            });
+
+            logging.info("Email verified successfully");
+
+            // The user is redirected to the login page...
+            res.redirect(`${SERVER.URL}/login`);
+            return;
+        } catch (error: any) {
+            logging.error(`Error: ${error.message}`);
+            // Error handling service, logs it to the database and notifies me via WhatsApp for quick action
+            await this.logs.logError(
+                "Error in the email verification service",
+                error.message,
+                "back"
+            );
+            throw new BadRequestException('Failed to verify email');
         }
     }
 
