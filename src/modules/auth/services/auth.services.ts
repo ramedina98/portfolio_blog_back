@@ -22,7 +22,7 @@ import { IUser, ResponseUser } from "src/interfaces/IAuth";
 import { ErrorLoggerService } from "../../../common/exceptions/error-logger.service";
 import { SERVER } from "src/config/config";
 import { EmailService } from "src/utils/email/email.service";
-import { Response } from "express";
+import { Request } from "express";
 import * as bcrypt from 'bcrypt'
 import logging from "src/config/logging";
 
@@ -207,7 +207,7 @@ export class AuthService {
      * @method POST
      * Service to login...
      */
-    async loginUser(dto: LoginUserDto, res: Response): Promise<ResponseUser>{
+    async loginUser(dto: LoginUserDto, req: Request): Promise<ResponseUser>{
         try {
             // first check if the user already exists...
             const existingUser: IUser | null = await this.mysql.users.findFirst({
@@ -260,7 +260,7 @@ export class AuthService {
 
             const refreshToken: string = await this.refreshTokenProvider(existingUser.id_user);
 
-            res.cookie('refreshToken', refreshToken, {
+            req.cookies('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: false, // HTTP - true, HTTPS - false
                 maxAge: 24 * 60 * 60 * 1000 // 1 day
