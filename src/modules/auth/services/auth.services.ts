@@ -352,6 +352,114 @@ export class AuthService {
 
     /**
      * @method POST
+     * Service to refresh the token...
+     * @param req - The request object
+     * @param res - The response object
+     * @returns - The new token
+     * @returns - The new refresh token
+     */
+    async refreshToken(req: Request, res: Response): Promise<ResponseUser>{
+        try {
+            const refreshToken: string = req.cookies['refreshToken'];
+
+            // First, check if the refresh token exists...
+            const [token, revokeToken] = await Promise.all([
+                this.mysql.refreshToken.findFirst({
+                    where: {
+                        token: refreshToken
+                    }
+                }),
+                this.mysql.revokeToken.findFirst({
+                    where: {
+                        token: refreshToken
+                    }
+                })
+            ]);
+
+            if(!token || revokeToken){
+                logging.warning("Invalid refresh token");
+                return {
+                    status: 400,
+                    message: "Invalid refresh token",
+                    user: {}
+                }
+            }
+
+            // Verify the refresh token...
+            const payload: any = this.JwtService.verify(refreshToken);
+
+            // Delete the old refresh token...
+            await Promise.all([
+                this.mysql.refreshToken.delete({
+                    where: {
+                        id_refresh_token: token.id_refresh_token
+                    }
+                }),
+                this.mysql.revokeToken.create({
+                    data: {
+                        token: refreshToken,
+                        id_user: token.id_user
+                    }
+                })
+            ]);
+
+            const user: IUser | null = await this.mysql.users.findFirst({
+                where: {
+                    id_user: payload.id
+                }
+            });
+
+            if(!user){
+                logging.warning("User does not exists");
+                return {
+                    status: 404,
+                    message: "User does not exists",
+                    user: {}
+                }
+            }
+
+            const newToken: string = this.JwtService.sign({
+                payload: {
+                    id: user.id_user,
+                    email: user.email,
+                    phone: user.phone,
+                    create: user.created_at,
+                    updated: user.updated_at
+                }
+            });
+
+            const newRefreshToken: string = await this.refreshTokenProvider(user.id_user);
+            res.cookie('refreshToken', newRefreshToken, {
+                httpOnly: true,
+                secure: false, // HTTP - true, HTTPS - false
+                maxAge: 24 * 60 * 60 * 1000 // 1 day
+            });
+
+            return {
+                status: 200,
+                message: "Token refreshed successfully",
+                token: newToken,
+                user: {
+                    name: user.first_name,
+                    last_name: user.first_surname,
+                    photo: user.photo
+                }
+            }
+
+        } catch (error: any) {
+            logging.error(`Error: ${error.message}`);
+            // Error handling service, logs it to the database and notifies me via WhatsApp for quick action
+            await this.logs.logError(
+                "Error in the refreshToken service",
+                error.message,
+                "back"
+            );
+            throw new BadRequestException('Failed to refresh token');
+        }
+    }
+
+    /**
+     * @method POST
      * Service to logout...
      * @param req - The request object
      */

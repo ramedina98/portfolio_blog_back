@@ -34,6 +34,12 @@ export class AuthController {
         return this.authService.loginUser(dto, res);
     }
 
+    // Refresh token controller...
+    @Post('refresh')
+    async refreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+        return this.authService.refreshToken(req, res);
+    }
+
     // Logout controller...
     @UseGuards(JwtAuthGuard)
     @Post('logout')
