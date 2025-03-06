@@ -6,7 +6,6 @@ import { JwtAuthGuard } from "src/security/guards/jwt-auth.guard";
 
 /**
  * TODO: faltan los siguientes controllers:
- * - Forgot password
  * - Reset password
  * - Change password
  */
@@ -58,5 +57,17 @@ export class AuthController {
     @Post('forgot')
     async forgotPassword(@Body('email') email: string) {
         return this.authService.forgotPassword(email);
+    }
+
+    // Reset password controller...
+    @Post('reset-password')
+    async resetPassword(@Query('token') token: string, @Res() res: Response) {
+        return this.authService.resetPassword(token, res);
+    }
+
+    // Change password controller...
+    @Put('change-password')
+    async changePassword(@Query('token') token: string, @Body('password') password: string) {
+        return this.authService.changePassword(token, password);
     }
 }

@@ -214,7 +214,7 @@ export class AuthService {
 
             if(payload.payload.email !== email){
                 logging.warning("Email does not match");
-                res.redirect(`${SERVER.URL}/notification?message=Email does not match`);
+                res.redirect(`${SERVER.WEB}/notification?message=Email does not match&status=error`);
                 return;
             }
 
@@ -226,13 +226,13 @@ export class AuthService {
 
             if(!user){
                 logging.warning("User does not exists");
-                res.redirect(`${SERVER.URL}/notification?message=User does not exists`);
+                res.redirect(`${SERVER.WEB}/notification?message=User does not exists&status=error`);
                 return;
             }
 
             if(user.is_verified){
                 logging.warning("User is already verified");
-                res.redirect(`${SERVER.URL}/notification?message=User is already verified`);
+                res.redirect(`${SERVER.WEB}/notification?message=User is already verified&status=warning`);
                 return;
             }
 
@@ -249,7 +249,7 @@ export class AuthService {
             logging.info("Email verified successfully");
 
             // The user is redirected to the login page...
-            res.redirect(`${SERVER.URL}/login`);
+            res.redirect(`${SERVER.WEB}/login`);
             return;
         } catch (error: any) {
             logging.error(`Error: ${error.message}`);
@@ -602,5 +602,100 @@ export class AuthService {
             );
             throw new BadRequestException('Failed to recover password');
         }
+    }
+
+    /**
+     * @method POST
+     * Service to reset the password...
+     * @param token - The token generated for the password recovery
+     * @param password - The new password
+     * @returns - A message indicating the success of the password reset
+     */
+    async resetPassword(token: string, res: Response): Promise<any>{
+        try {
+            const payload: any = this.JwtService.verify(token);
+
+            // Check if the token is still valid...
+            if(!payload){
+                logging.warning("Invalid token");
+                res.redirect(`${SERVER.WEB}/notification?message=Invalid token&status=error`);
+                return;
+            }
+
+            // Check if the token has expired...
+            if(payload.exp < Date.now()){
+                logging.warning("Token expired");
+                res.redirect(`${SERVER.WEB}/notification?message=Token expired&status=error`);
+                return;
+            }
+
+            // if everithing is ok, the user is redirected to the change password page...
+            logging.info("Token verified successfully, user redirected to change password page");
+            res.redirect(`${SERVER.WEB}/change-password?token=${token}`);
+            return;
+        } catch (error: any) {
+            logging.error(`Error: ${error.message}`);
+            // Error handling service, logs it to the database and notifies me via WhatsApp for quick action
+            await this.logs.logError(
+                "Error in the reset password service",
+                error.message,
+                "back"
+            );
+            throw new BadRequestException('Failed to reset password');
+        }
+    }
+
+    /**
+     * @method PUT
+     * Service to change the password...
+     * @param token - The token generated for the password recovery
+     * @param password - The new password
+     * @returns - A message indicating the success of the password change
+     */
+    async changePassword(token: string, password: string): Promise<ResponseUser>{
+        const payload: any = this.JwtService.verify(token);
+
+        // Check if the token is still valid...
+        if(!payload){
+            logging.warning("Invalid token");
+            return {
+                status: 400,
+                message: "There was an error with the token provided",
+                user: {}
+            }
+        }
+
+        // Extrack the user id from the token...
+        const id_user: string = payload.id;
+
+    try {
+        // Hash the new password...
+        const hashedPassword: string = await bcrypt.hash(password, 10);
+        // Find the user and change the password...
+        await this.mysql.users.update({
+            where: {
+                id_user: id_user
+            },
+            data: {
+                password: hashedPassword
+            }
+        });
+
+        logging.info("Password changed successfully");
+        return {
+            status: 200,
+            message: "Password changed successfully",
+            user: {}
+        }
+    } catch (error: any) {
+        logging.error(`Error: ${error.message}`);
+        // Error handling service, logs it to the database and notifies me via WhatsApp for quick action
+        await this.logs.logError(
+            "Error in the change password service",
+            error.message,
+            "back"
+        );
+        throw new BadRequestException('Failed to change password');
+    }
     }
 }
