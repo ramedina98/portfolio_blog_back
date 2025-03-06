@@ -1,13 +1,12 @@
 import { Controller, Get, Post, Put, Delete, Body, Query, Req, Res, Param, UseGuards } from "@nestjs/common";
 import { AuthService } from "../services/auth.services";
-import { CreateUserDto, LoginUserDto } from "../dto/auth.dto";
+import { CreateUserDto, LoginUserDto, ChangePasswordDto } from "../dto/auth.dto";
 import { Request, Response } from "express";
 import { JwtAuthGuard } from "src/security/guards/jwt-auth.guard";
 
 /**
  * TODO: faltan los siguientes controllers:
- * - Reset password
- * - Change password
+ * - Update Password...
  */
 
 @Controller('auth')
@@ -69,5 +68,12 @@ export class AuthController {
     @Put('change-password')
     async changePassword(@Query('token') token: string, @Body('password') password: string) {
         return this.authService.changePassword(token, password);
+    }
+
+    // Update password controller...
+    @UseGuards(JwtAuthGuard)
+    @Put('update-password')
+    async updatePassword(@Req() req: Request, @Body() dto: ChangePasswordDto) {
+        return this.authService.updatePassword(req, dto.old_password, dto.new_password);
     }
 }

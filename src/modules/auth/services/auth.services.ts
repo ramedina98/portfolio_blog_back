@@ -699,4 +699,83 @@ export class AuthService {
             throw new BadRequestException('Failed to change password');
         }
     }
+
+    /**
+     * @method PUT
+     * Service to update the password...
+     * @param old_password - The old password
+     * @param new_password - The new password
+     * @returns - A message indicating the success of the password update
+     */
+    async updatePassword(req: Request, old_password: string, new_password: string): Promise<ResponseUser>{
+        try {
+            const authHeader = req.headers.authorization;
+            console.log(authHeader);
+            if (!authHeader) {
+                throw new BadRequestException('Authorization header is missing');
+            }
+            const token = authHeader.split(' ')[1];
+            // Verify the token...
+            const payload: any = this.JwtService.verify(token);
+
+            // extract the user id from the token...
+            const id_user: string = payload.payload.id;
+
+            // Find the user...
+            const user: IUser | null = await this.mysql.users.findFirst({
+                where: {
+                    id_user: id_user
+                }
+            });
+
+            if (!user) {
+                logging.warning("User not found.");
+                return {
+                    status: 404,
+                    message: "User not found.",
+                    user: {}
+                };
+            }
+
+            // compare the old password provided and the password in the database...
+            const isPasswordValid = await bcrypt.compare(old_password, user.password);
+
+            if(!isPasswordValid){
+                logging.warning("Password does not exists.");
+                return {
+                    status: 400,
+                    message: "Old password does not match.",
+                    user: {}
+                }
+            }
+
+            // Hash the new password...
+            const hashedPassword: string = await bcrypt.hash(new_password, 10);
+
+            await this.mysql.users.update({
+                where: {
+                    id_user: id_user
+                },
+                data: {
+                    password: hashedPassword
+                }
+            });
+
+            logging.info("Password updated successfully");
+            return {
+                status: 200,
+                message: "Password updated successfully",
+                user: {}
+            }
+        } catch(error: any){
+            logging.error(`Error: ${error.message}`);
+            // Error handling service, logs it to the database and notifies me via WhatsApp for quick action
+            await this.logs.logError(
+                "Error in the update password service",
+                error.message,
+                "back"
+            );
+            throw new BadRequestException('Failed to update password');
+        }
+    }
 }
