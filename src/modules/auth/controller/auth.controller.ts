@@ -4,6 +4,13 @@ import { CreateUserDto, LoginUserDto } from "../dto/auth.dto";
 import { Request, Response } from "express";
 import { JwtAuthGuard } from "src/security/guards/jwt-auth.guard";
 
+/**
+ * TODO: faltan los siguientes controllers:
+ * - Forgot password
+ * - Reset password
+ * - Change password
+ */
+
 @Controller('auth')
 export class AuthController {
     /**
@@ -45,5 +52,11 @@ export class AuthController {
     @Post('logout')
     async logout(@Req() req: Request) {
         return this.authService.logoutUser(req);
+    }
+
+    // Forgot password controller...
+    @Post('forgot')
+    async forgotPassword(@Body('email') email: string) {
+        return this.authService.forgotPassword(email);
     }
 }

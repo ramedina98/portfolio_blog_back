@@ -518,4 +518,89 @@ export class AuthService {
             throw new BadRequestException('Failed to logout');
         }
     }
+
+    /**
+     * @method POST
+     * Service to recover the password...
+     * @param email - The email address of the user
+     * @returns - A email to reset the password
+     */
+    async forgotPassword(email: string): Promise<ResponseUser>{
+        try {
+            // Frist, verify if the user exists...
+            const user: IUser | null = await this.mysql.users.findFirst({
+                where: {
+                    email: email
+                }
+            });
+
+            if(!user){
+                logging.warning("User does not exists");
+                return {
+                    status: 404,
+                    message: "No user found with that email address provided",
+                    user: {}
+                }
+            }
+
+            // Generate a token for password recovery...
+            const token: string = this.JwtService.sign({
+                payload: {
+                    id: user.id_user,
+                    email: user.email,
+                    phone: user.phone,
+                },
+                expiresIn: "2m"
+            });
+
+            const subject: string = "Password Recovery";
+            const message: string = `
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Recuperación de Contraseña</title>
+                </head>
+                <body style="font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0; background-color: #f5ece5;">
+                <div class="container" style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                    <div class="header" style="text-align: center; padding: 10px 0; background-color: #cba17d; color: #ffffff; border-radius: 8px 8px 0 0;">
+                    <h2>Recuperación de Contraseña</h2>
+                    </div>
+                    <div class="content" style="padding: 20px;">
+                    <p>Hola,</p>
+                    <p>Recibimos una solicitud para restablecer tu contraseña. Por favor, haz clic en el siguiente enlace para restablecer tu contraseña:</p>
+                    <p style="text-align: center;">
+                        <a href="${SERVER.URL}/auth/reset-password?token=${token}" style="display: inline-block; padding: 10px 20px; background-color: #52769a; color: #ffffff; text-decoration: none; border-radius: 5px;">Restablecer Contraseña</a>
+                    </p>
+                    <p>Si no solicitaste un restablecimiento de contraseña, por favor ignora este correo.</p>
+                    </div>
+                    <div class="footer" style="text-align: center; padding: 10px 0; background-color: #cba17d; color: #ffffff; border-radius: 0 0 8px 8px;">
+                    <p>&copy; ${new Date().getFullYear()} Ricardo Dev</p>
+                    </div>
+                </div>
+                </body>
+                </html>
+            `;
+
+            await this.emailService.sendEmail(email, subject, message);
+
+            logging.info("Email sent successfully");
+            return {
+                status: 200,
+                message: "An email has been sent to your email address with instructions to reset your password",
+                user: {}
+            }
+
+        } catch (error: any) {
+            logging.error(`Error: ${error.message}`);
+            // Error handling service, logs it to the database and notifies me via WhatsApp for quick action
+            await this.logs.logError(
+                "Error in the forgot password service",
+                error.message,
+                "back"
+            );
+            throw new BadRequestException('Failed to recover password');
+        }
+    }
 }
