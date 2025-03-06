@@ -550,7 +550,7 @@ export class AuthService {
                     email: user.email,
                     phone: user.phone,
                 },
-                expiresIn: "2m"
+                expiresIn: "5m"
             });
 
             const subject: string = "Password Recovery";
@@ -623,7 +623,8 @@ export class AuthService {
             }
 
             // Check if the token has expired...
-            if(payload.exp < Date.now()){
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (payload.exp < currentTime) {
                 logging.warning("Token expired");
                 res.redirect(`${SERVER.WEB}/notification?message=Token expired&status=error`);
                 return;
@@ -666,36 +667,36 @@ export class AuthService {
         }
 
         // Extrack the user id from the token...
-        const id_user: string = payload.id;
+        const id_user: string = payload.payload.id;
 
-    try {
-        // Hash the new password...
-        const hashedPassword: string = await bcrypt.hash(password, 10);
-        // Find the user and change the password...
-        await this.mysql.users.update({
-            where: {
-                id_user: id_user
-            },
-            data: {
-                password: hashedPassword
+        try {
+            // Hash the new password...
+            const hashedPassword: string = await bcrypt.hash(password, 10);
+            // Find the user and change the password...
+            await this.mysql.users.update({
+                where: {
+                    id_user: id_user
+                },
+                data: {
+                    password: hashedPassword
+                }
+            });
+
+            logging.info("Password changed successfully");
+            return {
+                status: 200,
+                message: "Password changed successfully",
+                user: {}
             }
-        });
-
-        logging.info("Password changed successfully");
-        return {
-            status: 200,
-            message: "Password changed successfully",
-            user: {}
+        } catch (error: any) {
+            logging.error(`Error: ${error.message}`);
+            // Error handling service, logs it to the database and notifies me via WhatsApp for quick action
+            await this.logs.logError(
+                "Error in the change password service",
+                error.message,
+                "back"
+            );
+            throw new BadRequestException('Failed to change password');
         }
-    } catch (error: any) {
-        logging.error(`Error: ${error.message}`);
-        // Error handling service, logs it to the database and notifies me via WhatsApp for quick action
-        await this.logs.logError(
-            "Error in the change password service",
-            error.message,
-            "back"
-        );
-        throw new BadRequestException('Failed to change password');
-    }
     }
 }
