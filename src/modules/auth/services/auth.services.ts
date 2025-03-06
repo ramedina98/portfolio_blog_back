@@ -110,7 +110,7 @@ export class AuthService {
         );
 
         try {
-            const refreshT = await this.mysql.refreshTokens.create({
+            const refreshT = await this.mysql.refreshToken.create({
                 data: {
                     id_user: id_user,
                     token: refreshToken
@@ -267,7 +267,7 @@ export class AuthService {
      * @method POST
      * Service to login...
      */
-    async loginUser(dto: LoginUserDto, req: Request): Promise<ResponseUser>{
+    async loginUser(dto: LoginUserDto, res: Response): Promise<ResponseUser>{
         try {
             // first check if the user already exists...
             const existingUser: IUser | null = await this.mysql.users.findFirst({
@@ -320,7 +320,7 @@ export class AuthService {
 
             const refreshToken: string = await this.refreshTokenProvider(existingUser.id_user);
 
-            req.cookies('refreshToken', refreshToken, {
+            res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: false, // HTTP - true, HTTPS - false
                 maxAge: 24 * 60 * 60 * 1000 // 1 day
@@ -347,6 +347,67 @@ export class AuthService {
                 "back"
             );
             throw new BadRequestException('Failed to login');
+        }
+    }
+
+    /**
+     * @method POST
+     * Service to logout...
+     * @param req - The request object
+     */
+    async logoutUser(req: Request): Promise<ResponseUser>{
+        try {
+            const refreshToken: string = req.cookies['refreshToken'];
+
+            if(!refreshToken){
+                logging.warning("No refresh token provided");
+                return {
+                    status: 400,
+                    message: "No refresh token provided",
+                    user: {}
+                }
+            }
+
+            const token = await this.mysql.refreshToken.findFirst({
+                where: {
+                    token: refreshToken
+                }
+            });
+
+            await Promise.all([
+                this.mysql.refreshToken.delete({
+                    where: {
+                        id_refresh_token: token.id_refresh_token
+                    }
+                }),
+                this.mysql.revokeToken.create({
+                    data: {
+                        token: refreshToken,
+                        id_user: token.id_user
+                    }
+                })
+            ]);
+
+            logging.info("Logout successfully");
+
+            return {
+                status: 200,
+                message: "Logout successfully",
+                user: {
+                    name: "",
+                    last_name: "",
+                    photo: "",
+                }
+            }
+        } catch (error: any) {
+            logging.error(`Error: ${error.message}`);
+            // Error handling service, logs it to the database and notifies me via WhatsApp for quick action
+            await this.logs.logError(
+                "Error in the logout service",
+                error.message,
+                "back"
+            );
+            throw new BadRequestException('Failed to logout');
         }
     }
 }

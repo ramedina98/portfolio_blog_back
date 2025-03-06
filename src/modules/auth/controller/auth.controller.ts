@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Query, Req, Res, Param } from "@nestjs/common";
+import { Controller, Get, Post, Put, Delete, Body, Query, Req, Res, Param, UseGuards } from "@nestjs/common";
 import { AuthService } from "../services/auth.services";
 import { CreateUserDto, LoginUserDto } from "../dto/auth.dto";
 import { Request, Response } from "express";
@@ -30,7 +30,14 @@ export class AuthController {
 
     // Login controller...
     @Post('login')
-    async login(@Body() dto: LoginUserDto, @Req() req: Request) {
-        return this.authService.loginUser(dto, req);
+    async login(@Body() dto: LoginUserDto, @Res({ passthrough: true }) res: Response) {
+        return this.authService.loginUser(dto, res);
+    }
+
+    // Logout controller...
+    @UseGuards(JwtAuthGuard)
+    @Post('logout')
+    async logout(@Req() req: Request) {
+        return this.authService.logoutUser(req);
     }
 }
