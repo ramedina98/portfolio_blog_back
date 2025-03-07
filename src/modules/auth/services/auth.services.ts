@@ -165,16 +165,16 @@ export class AuthService {
             });
 
             // Generate a token for email verification...
-            const token: string = this.JwtService.sign({
-                payload: {
+            const token: string = this.JwtService.sign(
+                {
                     id: user.id_user,
                     email: user.email,
                     phone: user.phone,
                     create: user.created_at,
                     updated: user.updated_at
                 },
-                expiresIn: "1d"
-            });
+                { expiresIn: "1d" }
+            );
 
             const wasEmailSend = await this.sendEmailVerification(dto.email, token);
 
@@ -212,7 +212,7 @@ export class AuthService {
         try {
             const payload: any = this.JwtService.verify(token);
 
-            if(payload.payload.email !== email){
+            if(payload.email !== email){
                 logging.warning("Email does not match");
                 res.redirect(`${SERVER.WEB}/notification?message=Email does not match&status=error`);
                 return;
@@ -308,15 +308,15 @@ export class AuthService {
             }
 
             // Sesion token...
-            const token: string = this.JwtService.sign({
-                payload: {
+            const token: string = this.JwtService.sign(
+                {
                     id: existingUser.id_user,
                     email: existingUser.email,
                     phone: existingUser.phone,
                     create: existingUser.created_at,
                     updated: existingUser.updated_at
                 }
-            });
+            );
 
             const refreshToken: string = await this.refreshTokenProvider(existingUser.id_user);
 
@@ -418,15 +418,15 @@ export class AuthService {
                 }
             }
 
-            const newToken: string = this.JwtService.sign({
-                payload: {
+            const newToken: string = this.JwtService.sign(
+                {
                     id: user.id_user,
                     email: user.email,
                     phone: user.phone,
                     create: user.created_at,
                     updated: user.updated_at
                 }
-            });
+            );
 
             const newRefreshToken: string = await this.refreshTokenProvider(user.id_user);
             res.cookie('refreshToken', newRefreshToken, {
@@ -544,14 +544,14 @@ export class AuthService {
             }
 
             // Generate a token for password recovery...
-            const token: string = this.JwtService.sign({
-                payload: {
+            const token: string = this.JwtService.sign(
+                {
                     id: user.id_user,
                     email: user.email,
                     phone: user.phone,
                 },
-                expiresIn: "5m"
-            });
+                { expiresIn: "5m" }
+            );
 
             const subject: string = "Password Recovery";
             const message: string = `
@@ -667,7 +667,7 @@ export class AuthService {
         }
 
         // Extrack the user id from the token...
-        const id_user: string = payload.payload.id;
+        const id_user: string = payload.id;
 
         try {
             // Hash the new password...
@@ -719,7 +719,7 @@ export class AuthService {
             const payload: any = this.JwtService.verify(token);
 
             // extract the user id from the token...
-            const id_user: string = payload.payload.id;
+            const id_user: string = payload.id;
 
             // Find the user...
             const user: IUser | null = await this.mysql.users.findFirst({

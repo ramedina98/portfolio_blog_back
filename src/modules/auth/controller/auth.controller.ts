@@ -4,11 +4,6 @@ import { CreateUserDto, LoginUserDto, ChangePasswordDto } from "../dto/auth.dto"
 import { Request, Response } from "express";
 import { JwtAuthGuard } from "src/security/guards/jwt-auth.guard";
 
-/**
- * TODO: faltan los siguientes controllers:
- * - Update Password...
- */
-
 @Controller('auth')
 export class AuthController {
     /**
